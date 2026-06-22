@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
@@ -25,3 +25,15 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             password = validated_data['password']
         )
+
+class LoginSerializer(serializers.Serializer):
+
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        user = User.objects.filter(email=attrs['email']).first()
+        if not user or not user.check_password(attrs['password']):
+            raise serializers.ValidationError('Invalid credentials.')
+        attrs['user'] = user
+        return attrs
