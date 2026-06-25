@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.response import Response
+from boards_app.api.permissions import IsOwner, IsBoardMember
 
 class BoardListCreateView(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -24,6 +25,16 @@ class BoardListCreateView(generics.ListCreateAPIView):
             tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to_do'), distinct=True),
             tasks_high_prio_count=Count('tasks', filter=Q(tasks__priority='high'), distinct=True)
         )
+    
+class BoardRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Board.objects.all()
+    serializer_class = BoardDetailSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'DELETE':
+            return [IsOwner(), IsAuthenticated()]
+        return [IsBoardMember(), IsAuthenticated()]
+
     
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated]

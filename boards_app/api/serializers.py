@@ -2,6 +2,23 @@ from rest_framework import serializers
 from boards_app.models import Board
 from django.contrib.auth.models import User
 
+class MemberSerializer(serializers.ModelSerializer):
+
+    fullname = serializers.CharField(source='username', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'fullname']
+
+
+class TaskSerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = User
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
+
+
 class BoardListSerializer(serializers.ModelSerializer):
 
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
@@ -33,10 +50,14 @@ class BoardCreateSerializer(serializers.ModelSerializer):
 
 class BoardDetailSerializer(serializers.ModelSerializer):
 
+    owner_id = serializers.IntegerField(source='owner.id', read_only=True)
+    members = MemberSerializer(many=True, read_only=True)
+    tasks = TaskSerializer(many=True, read_only=True)
+
     class Meta:
         model = Board
-        fields = '__all__'
-
+        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
+        
 
 class EmailCheckSerializer(serializers.ModelSerializer):
 
@@ -48,3 +69,4 @@ class EmailCheckSerializer(serializers.ModelSerializer):
 
     def get_fullname(self, obj):
         return f"{obj.first_name} {obj.last_name}"
+    
