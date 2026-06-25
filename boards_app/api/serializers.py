@@ -4,11 +4,16 @@ from django.contrib.auth.models import User
 
 class MemberSerializer(serializers.ModelSerializer):
 
-    fullname = serializers.CharField(source='username', read_only=True)
+    fullname = serializers.SerializerMethodField( read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'email', 'fullname']
+
+    
+    def get_fullname(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -46,6 +51,25 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         board.members.set(members)
         board.members.add(owner)
         return board
+    
+
+class BoardUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Board
+        fields = ['title', 'members']
+
+
+
+class BoardUpdateResponseSerializer(serializers.ModelSerializer):
+
+    owner_data = MemberSerializer(source='owner' ,read_only=True)
+    members_data = MemberSerializer(source='members', many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'owner_data', 'members_data']
+
     
 
 class BoardDetailSerializer(serializers.ModelSerializer):
