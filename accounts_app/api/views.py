@@ -11,9 +11,10 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            token, created = Token.objects.get_or_create(user=user)
             return Response({
-                "token": user.auth_token.key,
-                "fullname": user.username,
+                "token": token.key,
+                "fullname": f"{user.first_name} {user.last_name}",
                 "email": user.email,
                 "user_id": user.id,
             }, status=status.HTTP_201_CREATED)
@@ -31,7 +32,7 @@ class LoginView(APIView):
 
         return Response({
             'token': token.key,
-            'fullname': user.username,
+            'fullname': f"{user.first_name} {user.last_name}",
             'email': user.email,
             'user_id': user.id,
         }, status=status.HTTP_200_OK)
