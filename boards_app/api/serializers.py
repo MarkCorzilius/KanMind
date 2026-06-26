@@ -1,28 +1,8 @@
 from rest_framework import serializers
 from boards_app.models import Board
 from django.contrib.auth.models import User
-
-class MemberSerializer(serializers.ModelSerializer):
-
-    fullname = serializers.SerializerMethodField( read_only=True)
-
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'fullname']
-
-    
-    def get_fullname(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
-    
-
-
-class TaskSerializer(serializers.ModelSerializer):
-
-
-    class Meta:
-        model = User
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
-
+from core.serializers import MemberSerializer
+from tasks_app.api.serializers import TaskListSerializer
 
 class BoardListSerializer(serializers.ModelSerializer):
 
@@ -39,7 +19,9 @@ class BoardListSerializer(serializers.ModelSerializer):
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
+
     members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+    
     class Meta:
         model = Board
         fields = ['title', 'members']
@@ -76,7 +58,7 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
     members = MemberSerializer(many=True, read_only=True)
-    tasks = TaskSerializer(many=True, read_only=True)
+    tasks = TaskListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Board
