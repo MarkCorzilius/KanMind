@@ -17,16 +17,30 @@ class TaskListSerializer(serializers.ModelSerializer):
         fields = ['board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
 
 
-class TaskListResponseSerializer(serializers.ModelSerializer):
+class TaskResponseSerializer(serializers.ModelSerializer):
 
     assignee = MemberSerializer(read_only=True)
     reviewer = MemberSerializer(read_only=True)
+    owner = MemberSerializer(read_only=True)
     comments_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'owner', 'due_date', 'comments_count']
 
     def get_comments_count(self, obj):
         return obj.comments.count()
     
+
+class TaskUpdateSerializer(serializers.ModelSerializer):
+
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        source='assignee', queryset=User.objects.all(), allow_null=True, required=False
+    )
+    reviewer_id = serializers.PrimaryKeyRelatedField(
+        source='reviewer', queryset=User.objects.all(), allow_null=True, required=False
+    )
+    
+    class Meta:
+        model = Task
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']

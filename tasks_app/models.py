@@ -21,6 +21,7 @@ class Task(models.Model):
         MEDIUM = 'medium', 'Medium'
         HIGH = 'high', 'High'
 
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_tasks', null=True)
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='tasks')
     title = models.CharField(max_length=50)
     description = models.TextField(max_length=300)
