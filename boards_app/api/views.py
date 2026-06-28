@@ -1,13 +1,15 @@
 from django.db.models import Count
 from boards_app.models import Board
 from django.db.models import Q
-from boards_app.api.serializers import BoardListSerializer, BoardCreateSerializer, BoardDetailSerializer, EmailCheckSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
+from boards_app.api.serializers import BoardListSerializer, BoardCreateSerializer, \
+BoardDetailSerializer, EmailCheckSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from boards_app.api.permissions import IsOwner, IsBoardMember
+from core.permissions import IsOwner, IsBoardMember
+
 
 class BoardListCreateView(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -20,9 +22,8 @@ class BoardListCreateView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         return Board.objects.filter(members=self.request.user).annotate(
-            member_count=Count('members', distinct=True),
-            tasks_count=Count('tasks', distinct=True),
-            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to_do'), distinct=True),
+            ticket_count=Count('tasks', distinct=True),
+            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to-do'), distinct=True),
             tasks_high_prio_count=Count('tasks', filter=Q(tasks__priority='high'), distinct=True)
         )
     
@@ -31,6 +32,7 @@ class BoardListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
         return Response(BoardDetailSerializer(board).data, status=201)
+    
     
 class BoardRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all()
