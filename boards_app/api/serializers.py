@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from core.serializers import MemberSerializer
 from tasks_app.api.serializers import TaskResponseSerializer
 
+
 class BoardListSerializer(serializers.ModelSerializer):
 
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
@@ -18,7 +19,6 @@ class BoardListSerializer(serializers.ModelSerializer):
 
     def get_member_count(self, obj):
         return obj.members.count()
-
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
@@ -45,7 +45,6 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
         fields = ['title', 'members']
 
 
-
 class BoardUpdateResponseSerializer(serializers.ModelSerializer):
 
     owner_data = MemberSerializer(source='owner' ,read_only=True)
@@ -56,7 +55,6 @@ class BoardUpdateResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'owner_data', 'members_data']
 
     
-
 class BoardDetailSerializer(serializers.ModelSerializer):
 
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
@@ -67,7 +65,7 @@ class BoardDetailSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id', 'title', 'owner_id', 'members', 'tasks']
         
-
+        
 class EmailCheckSerializer(serializers.ModelSerializer):
 
     fullname = serializers.SerializerMethodField()

@@ -1,13 +1,15 @@
 from django.db.models import Count
 from boards_app.models import Board
 from django.db.models import Q
-from boards_app.api.serializers import BoardListSerializer, BoardCreateSerializer, BoardDetailSerializer, EmailCheckSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
+from boards_app.api.serializers import BoardListSerializer, BoardCreateSerializer, \
+BoardDetailSerializer, EmailCheckSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from core.permissions import IsOwner, IsBoardMember
+
 
 class BoardListCreateView(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -30,6 +32,7 @@ class BoardListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
         return Response(BoardDetailSerializer(board).data, status=201)
+    
     
 class BoardRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all()

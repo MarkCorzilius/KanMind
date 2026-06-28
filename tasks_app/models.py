@@ -2,7 +2,7 @@ from django.db import models
 from boards_app.models import Board
 from django.contrib.auth.models import User
 
-# Create your models here.
+
 class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     task = models.ForeignKey("Task", on_delete=models.CASCADE, related_name='comments')
@@ -11,6 +11,7 @@ class Comment(models.Model):
 
 
 class Task(models.Model):
+    
     class Status(models.TextChoices):
         TODO = 'to-do', 'To Do'
         IN_PROGRESS = 'in-progress', 'In Progress'

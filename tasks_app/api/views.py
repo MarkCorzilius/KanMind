@@ -8,7 +8,9 @@ from tasks_app.api.serializers import TaskListSerializer, TaskResponseSerializer
 from rest_framework.response import Response
 from rest_framework import viewsets
 
+
 class TaskCreateView(generics.CreateAPIView):
+    
     queryset = Task.objects.all()
     permission_classes = [IsBoardMember, IsAuthenticated]
     serializer_class = TaskListSerializer
@@ -31,6 +33,7 @@ class TasksAssignedToCurrentUserView(generics.ListAPIView):
 
 
 class TasksReviewByCurrentUserView(generics.ListAPIView):
+
     queryset = Task.objects.all()
     permission_classes = [IsBoardMember, IsAuthenticated]
     serializer_class = TaskResponseSerializer
@@ -39,8 +42,8 @@ class TasksReviewByCurrentUserView(generics.ListAPIView):
         return Task.objects.filter(reviewer=self.request.user)
 
 
-
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+
     queryset = Task.objects.all()
     lookup_url_kwarg = 'task_pk'
     http_method_names = ['patch', 'delete']
@@ -51,7 +54,6 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return [(IsOwner | IsTaskAssignee)(), IsAuthenticated()]
         return [IsTaskBoardMember(), IsAuthenticated()]
     
-    
     def partial_update(self, request, *args, **kwargs):
         task = self.get_object()
         serializer = TaskUpdateSerializer(task, data=request.data, partial=True)
@@ -60,8 +62,8 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return Response(TaskResponseSerializer(task).data)
 
 
-
 class CommentsListCreateViewSet(viewsets.ModelViewSet):
+
     queryset = Comment.objects.all()
     http_method_names = ['get', 'post', 'delete']
     serializer_class = CommentsSerializer

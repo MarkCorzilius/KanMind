@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from boards_app.models import Board
 from tasks_app.models import Task
 
+
 @receiver(m2m_changed, sender=Board.members.through)
 def unset_removed_members_from_tasks(sender, instance, action, pk_set, **kwargs):
     if action == 'post_remove':

@@ -3,6 +3,7 @@ from tasks_app.models import Task, Comment
 from django.contrib.auth.models import User
 from core.serializers import MemberSerializer
 
+
 class TaskListSerializer(serializers.ModelSerializer):
 
     assignee_id = serializers.PrimaryKeyRelatedField(
@@ -44,7 +45,6 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
-
 
 
 class CommentsSerializer(serializers.ModelSerializer):
