@@ -1,11 +1,12 @@
 from rest_framework import generics
-from tasks_app.models import Task
+from tasks_app.models import Task, Comment
 from core.permissions import IsBoardMember, IsOwner
-from tasks_app.api.permissions import IsTaskBoardMember
-from tasks_app.api.permissions import IsTaskAssignee
+from tasks_app.api.permissions import IsTaskBoardMember, IsCommentAuthor
+from tasks_app.api.permissions import IsTaskAssignee, IsCommentBoardMember
 from rest_framework.permissions import IsAuthenticated
-from tasks_app.api.serializers import TaskListSerializer, TaskResponseSerializer, TaskUpdateSerializer
+from tasks_app.api.serializers import TaskListSerializer, TaskResponseSerializer, TaskUpdateSerializer, CommentsSerializer
 from rest_framework.response import Response
+from rest_framework import viewsets
 
 class TaskCreateView(generics.CreateAPIView):
     queryset = Task.objects.all()
@@ -42,6 +43,7 @@ class TasksReviewByCurrentUserView(generics.ListAPIView):
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     http_method_names = ['patch', 'delete']
+    serializer_class = TaskUpdateSerializer
 
     def get_permissions(self):
         if self.request.method == 'DELETE':
@@ -56,4 +58,30 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return Response(TaskResponseSerializer(task).data)
 
 
-# if reviewer or assignee is not in board = unset
+
+class CommentsListCreateViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    http_method_names = ['get', 'post', 'delete']
+    serializer_class = CommentsSerializer
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            return [IsCommentAuthor(), IsAuthenticated()]
+        return [IsCommentBoardMember(), IsAuthenticated()]
+
+    def list(self, request, task_pk=None):
+        comments = Comment.objects.filter(task=task_pk)
+        serializer = self.serializer_class(comments, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save(author=request.user, task_id=self.kwargs['task_pk'])
+        return Response(CommentsSerializer(comment).data)
+    
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        comment.delete()
+        return Response(status=204)
+
