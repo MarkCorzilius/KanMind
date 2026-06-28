@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import RegisterSerializer, LoginSerializer
 from rest_framework.authtoken.models import Token
 
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -19,6 +20,7 @@ class RegisterView(APIView):
                 "user_id": user.id,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
 
