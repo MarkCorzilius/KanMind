@@ -20,9 +20,8 @@ class BoardListCreateView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         return Board.objects.filter(members=self.request.user).annotate(
-            member_count=Count('members', distinct=True),
-            tasks_count=Count('tasks', distinct=True),
-            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to_do'), distinct=True),
+            ticket_count=Count('tasks', distinct=True),
+            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to-do'), distinct=True),
             tasks_high_prio_count=Count('tasks', filter=Q(tasks__priority='high'), distinct=True)
         )
     

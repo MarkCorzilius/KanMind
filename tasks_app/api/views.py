@@ -24,7 +24,7 @@ class TasksAssignedToCurrentUserView(generics.ListAPIView):
 
     queryset = Task.objects.all()
     permission_classes = [IsBoardMember, IsAuthenticated]
-    serializer_class = TaskListSerializer
+    serializer_class = TaskResponseSerializer
 
     def get_queryset(self):
         return Task.objects.filter(assignee=self.request.user)
@@ -33,7 +33,7 @@ class TasksAssignedToCurrentUserView(generics.ListAPIView):
 class TasksReviewByCurrentUserView(generics.ListAPIView):
     queryset = Task.objects.all()
     permission_classes = [IsBoardMember, IsAuthenticated]
-    serializer_class = TaskListSerializer
+    serializer_class = TaskResponseSerializer
 
     def get_queryset(self):
         return Task.objects.filter(reviewer=self.request.user)
@@ -42,6 +42,7 @@ class TasksReviewByCurrentUserView(generics.ListAPIView):
 
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
+    lookup_url_kwarg = 'task_pk'
     http_method_names = ['patch', 'delete']
     serializer_class = TaskUpdateSerializer
 
@@ -49,6 +50,7 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'DELETE':
             return [(IsOwner | IsTaskAssignee)(), IsAuthenticated()]
         return [IsTaskBoardMember(), IsAuthenticated()]
+    
     
     def partial_update(self, request, *args, **kwargs):
         task = self.get_object()
