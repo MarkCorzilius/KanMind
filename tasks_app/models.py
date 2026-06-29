@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 
 class Comment(models.Model):
+    """A user comment attached to a task."""
     created_at = models.DateTimeField(auto_now_add=True)
     task = models.ForeignKey("Task", on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='authored_comments')
@@ -11,6 +12,7 @@ class Comment(models.Model):
 
 
 class Task(models.Model):
+    """Represents a task on a board with status, priority, assignee, and reviewer."""
     
     class Status(models.TextChoices):
         TODO = 'to-do', 'To Do'

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """Validate and create a new user account."""
 
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
@@ -13,6 +14,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id', 'fullname', 'email', 'password', 'repeated_password']
 
     def validate(self, data):
+        """Validate passwords match, fullname has two parts, and email is unique."""
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({'password': 'Passwords do not match.'})
         
@@ -28,6 +30,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        """Create and return a new user from validated data."""
         validated_data.pop('repeated_password')
 
         return User.objects.create_user(
@@ -40,11 +43,13 @@ class RegisterSerializer(serializers.ModelSerializer):
     
 
 class LoginSerializer(serializers.Serializer):
+    """Validate user credentials and expose the authenticated user."""
 
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        """Validate credentials and attach the user to the returned data."""
         user = User.objects.filter(email=attrs['email']).first()
         if not user or not user.check_password(attrs['password']):
             raise serializers.ValidationError('Invalid credentials.')

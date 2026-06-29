@@ -7,8 +7,11 @@ from rest_framework.authtoken.models import Token
 
 
 class RegisterView(APIView):
+    """Handle user registration requests."""
+
     permission_classes = [AllowAny]
     def post(self, request):
+        """Register a new user and return their token and profile info."""
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -23,10 +26,12 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    """Handle user login and token retrieval."""
 
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Authenticate a user and return their token and profile info."""
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']

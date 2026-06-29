@@ -5,6 +5,7 @@ from core.serializers import MemberSerializer
 
 
 class TaskListSerializer(serializers.ModelSerializer):
+    """Serialize task input data for creation, accepting assignee/reviewer by id."""
 
     assignee_id = serializers.PrimaryKeyRelatedField(
         source='assignee', queryset=User.objects.all(), allow_null=True, required=False
@@ -19,6 +20,7 @@ class TaskListSerializer(serializers.ModelSerializer):
 
 
 class TaskResponseSerializer(serializers.ModelSerializer):
+    """Serialize a full task response with nested user objects and comment count."""
 
     assignee = MemberSerializer(read_only=True)
     reviewer = MemberSerializer(read_only=True)
@@ -30,10 +32,12 @@ class TaskResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'owner', 'due_date', 'comments_count']
 
     def get_comments_count(self, obj):
+        """Return the total number of comments on the task."""
         return obj.comments.count()
     
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
+    """Serialize task update data, accepting assignee/reviewer by id."""
 
     assignee_id = serializers.PrimaryKeyRelatedField(
         source='assignee', queryset=User.objects.all(), allow_null=True, required=False
@@ -48,6 +52,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
+    """Serialize a comment with computed author full name."""
 
     author = serializers.SerializerMethodField(read_only=True)
     owner = MemberSerializer(read_only=True)
@@ -57,4 +62,5 @@ class CommentsSerializer(serializers.ModelSerializer):
         fields = ['id', 'created_at', 'author', 'owner', 'content']
 
     def get_author(self, obj):
+        """Return the comment author's full name."""
         return f"{obj.author.first_name} {obj.author.last_name}"
