@@ -13,7 +13,7 @@ It includes user authentication, boards, tasks, comments, and task visualization
 
 ---
 
-## 🚀 Setup Instructions
+## 🚀 Quickstart Instructions
 
 - Clone the repository
 ```bash
