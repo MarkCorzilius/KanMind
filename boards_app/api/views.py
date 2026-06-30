@@ -2,11 +2,9 @@ from django.db.models import Count
 from boards_app.models import Board
 from django.db.models import Q
 from boards_app.api.serializers import BoardListSerializer, BoardCreateSerializer, \
-BoardDetailSerializer, EmailCheckSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
+    BoardDetailSerializer, BoardUpdateSerializer, BoardUpdateResponseSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from django.contrib.auth.models import User
 from rest_framework.response import Response
 from core.permissions import IsOwner, IsBoardMember
 
@@ -16,26 +14,31 @@ class BoardListCreateView(generics.ListCreateAPIView):
     queryset = Board.objects.all()
     permission_classes = [IsAuthenticated]
 
+    def annotate_tasks(self, qs):
+        """Adds task statistics (total, to-do, high priority) to a queryset."""
+        return qs.annotate(
+            ticket_count=Count('tasks', distinct=True),
+            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to-do'), distinct=True),
+            tasks_high_prio_count=Count('tasks', filter=Q(tasks__priority='high'), distinct=True)
+        )
+
     def get_serializer_class(self):
-        """Use BoardCreateSerializer for POST, otherwise BoardListSerializer."""
+        """Chooses create or list serializer based on request method."""
         if self.request.method == 'POST':
             return BoardCreateSerializer
         return BoardListSerializer
     
     def get_queryset(self):
-        """Return boards the current user is a member of, annotated with task counts."""
-        return Board.objects.filter(members=self.request.user).annotate(
-            ticket_count=Count('tasks', distinct=True),
-            tasks_to_do_count=Count('tasks', filter=Q(tasks__status='to-do'), distinct=True),
-            tasks_high_prio_count=Count('tasks', filter=Q(tasks__priority='high'), distinct=True)
-        )
+        """Returns the user’s boards with annotated task counts."""
+        return self.annotate_tasks(Board.objects.filter(members=self.request.user))
     
     def create(self, request, *args, **kwargs):
-        """Create a board and return its full detail representation."""
+        """Creates a board and returns it with annotated task counts."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
-        return Response(BoardDetailSerializer(board).data, status=201)
+        annotated = self.annotate_tasks(Board.objects.filter(pk=board.pk)).first()
+        return Response(BoardListSerializer(annotated).data, status=201)
     
     
 class BoardRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -57,19 +60,3 @@ class BoardRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         board = serializer.save()
         return Response(BoardUpdateResponseSerializer(board).data)
-
-    
-class EmailCheckView(APIView):
-    """Look up a user by email address."""
-
-    permission_classes = [IsAuthenticated]
-    serializer_class = EmailCheckSerializer
-
-    def get(self, request):
-        """Look up a user by email query param and return their id, email, and fullname."""
-        email = request.query_params.get('email')
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'detail': 'User does not exist.'}, status=404)
-        return Response(EmailCheckSerializer(user).data)

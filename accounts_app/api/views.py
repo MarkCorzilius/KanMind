@@ -2,8 +2,10 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .serializers import RegisterSerializer, LoginSerializer
+from accounts_app.api.serializers import RegisterSerializer, LoginSerializer, EmailCheckSerializer
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
 
 
 class RegisterView(APIView):
@@ -43,3 +45,20 @@ class LoginView(APIView):
             'email': user.email,
             'user_id': user.id,
         }, status=status.HTTP_200_OK)
+    
+
+class EmailCheckView(APIView):
+    """Look up a user by email address."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = EmailCheckSerializer
+    http_method_names = ['get']
+
+    def get(self, request):
+        """Look up a user by email query param and return their id, email, and fullname."""
+        email = request.query_params.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'detail': 'User does not exist.'}, status=404)
+        return Response(EmailCheckSerializer(user).data)

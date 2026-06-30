@@ -71,18 +71,3 @@ class BoardDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id', 'title', 'owner_id', 'members', 'tasks']
-        
-        
-class EmailCheckSerializer(serializers.ModelSerializer):
-    """Serialize a user for the email-check lookup endpoint."""
-
-    fullname = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'fullname']
-
-    def get_fullname(self, obj):
-        """Return the user's full name as 'first last'."""
-        return f"{obj.first_name} {obj.last_name}"
-    

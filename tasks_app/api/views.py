@@ -13,7 +13,7 @@ class TaskCreateView(generics.CreateAPIView):
     """Create a new task on a board."""
     
     queryset = Task.objects.all()
-    permission_classes = [IsBoardMember, IsAuthenticated]
+    permission_classes = [IsTaskBoardMember, IsAuthenticated]
     serializer_class = TaskListSerializer
 
     def create(self, request, *args, **kwargs):
@@ -21,7 +21,7 @@ class TaskCreateView(generics.CreateAPIView):
         serializer = TaskListSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = serializer.save(owner=request.user)
-        return Response(TaskResponseSerializer(task).data)
+        return Response(TaskResponseSerializer(task).data, status=201)
 
 
 class TasksAssignedToCurrentUserView(generics.ListAPIView):
@@ -33,7 +33,7 @@ class TasksAssignedToCurrentUserView(generics.ListAPIView):
 
     def get_queryset(self):
         """Return all tasks assigned to the current user."""
-        return Task.objects.filter(assignee=self.request.user)
+        return Task.objects.filter(assignee=self.request.user, board__members=self.request.user)
 
 
 class TasksReviewByCurrentUserView(generics.ListAPIView):
@@ -45,7 +45,7 @@ class TasksReviewByCurrentUserView(generics.ListAPIView):
 
     def get_queryset(self):
         """Return all tasks where the current user is the reviewer."""
-        return Task.objects.filter(reviewer=self.request.user)
+        return Task.objects.filter(reviewer=self.request.user, board__members=self.request.user)
 
 
 class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -81,8 +81,8 @@ class CommentsListCreateViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Require comment authorship for DELETE; board membership for other methods."""
         if self.request.method == "DELETE":
-            return [IsCommentAuthor(), IsAuthenticated()]
-        return [IsCommentBoardMember(), IsAuthenticated()]
+            return [IsCommentAuthor()]
+        return [IsCommentBoardMember()]
 
     def list(self, request, task_pk=None):
         """Return all comments for the given task."""
@@ -95,7 +95,7 @@ class CommentsListCreateViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         comment = serializer.save(author=request.user, task_id=self.kwargs['task_pk'])
-        return Response(CommentsSerializer(comment).data)
+        return Response(CommentsSerializer(comment).data, status=201)
     
     def destroy(self, request, *args, **kwargs):
         """Delete a comment and return 204 No Content."""
