@@ -15,6 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Validate passwords match, fullname has two parts, and email is unique."""
+        
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({'password': 'Passwords do not match.'})
         
@@ -31,6 +32,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create and return a new user from validated data."""
+        
         validated_data.pop('repeated_password')
 
         return User.objects.create_user(
@@ -50,6 +52,7 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """Validate credentials and attach the user to the returned data."""
+
         user = User.objects.filter(email=attrs['email']).first()
         if not user or not user.check_password(attrs['password']):
             raise serializers.ValidationError('Invalid credentials.')
@@ -68,5 +71,6 @@ class EmailCheckSerializer(serializers.ModelSerializer):
 
     def get_fullname(self, obj):
         """Return the user's full name as 'first last'."""
+
         return f"{obj.first_name} {obj.last_name}"
     

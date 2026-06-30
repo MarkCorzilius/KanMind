@@ -14,6 +14,7 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         """Register a new user and return their token and profile info."""
+
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -34,6 +35,7 @@ class LoginView(APIView):
 
     def post(self, request):
         """Authenticate a user and return their token and profile info."""
+
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
@@ -56,6 +58,7 @@ class EmailCheckView(APIView):
 
     def get(self, request):
         """Look up a user by email query param and return their id, email, and fullname."""
+        
         email = request.query_params.get('email')
         try:
             user = User.objects.get(email=email)

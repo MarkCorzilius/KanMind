@@ -20,6 +20,7 @@ class BoardListSerializer(serializers.ModelSerializer):
 
     def get_member_count(self, obj):
         """Return the number of members in the board."""
+        
         return obj.members.count()
 
 
@@ -34,6 +35,7 @@ class BoardCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a board, set members, and automatically include the owner as member."""
+
         members = validated_data.pop('members')
         owner = self.context['request'].user
         board = Board.objects.create(owner=owner, **validated_data)

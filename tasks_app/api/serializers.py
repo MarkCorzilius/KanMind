@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from core.serializers import MemberSerializer
 
 
-class TaskListSerializer(serializers.ModelSerializer):
+class TaskSerializer(serializers.ModelSerializer):
     """Serialize task input data for creation, accepting assignee/reviewer by id."""
 
     assignee_id = serializers.PrimaryKeyRelatedField(
@@ -17,6 +17,14 @@ class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
+
+
+class TaskUpdateSerializer(TaskSerializer):
+    """Serialize task update data"""
+    
+    class Meta:
+        model = Task
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
 
 
 class TaskResponseSerializer(serializers.ModelSerializer):
@@ -33,23 +41,9 @@ class TaskResponseSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, obj):
         """Return the total number of comments on the task."""
+        
         return obj.comments.count()
     
-
-class TaskUpdateSerializer(serializers.ModelSerializer):
-    """Serialize task update data, accepting assignee/reviewer by id."""
-
-    assignee_id = serializers.PrimaryKeyRelatedField(
-        source='assignee', queryset=User.objects.all(), allow_null=True, required=False
-    )
-    reviewer_id = serializers.PrimaryKeyRelatedField(
-        source='reviewer', queryset=User.objects.all(), allow_null=True, required=False
-    )
-    
-    class Meta:
-        model = Task
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee_id', 'reviewer_id', 'due_date']
-
 
 class CommentsSerializer(serializers.ModelSerializer):
     """Serialize a comment with computed author full name."""
@@ -63,4 +57,5 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         """Return the comment author's full name."""
+
         return f"{obj.author.first_name} {obj.author.last_name}"
