@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from tasks_app.api.serializers import TaskListSerializer, TaskResponseSerializer, TaskUpdateSerializer, CommentsSerializer
 from rest_framework.response import Response
 from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 
 
 class TaskCreateView(generics.CreateAPIView):
@@ -15,6 +16,9 @@ class TaskCreateView(generics.CreateAPIView):
     queryset = Task.objects.all()
     permission_classes = [IsTaskBoardMember, IsAuthenticated]
     serializer_class = TaskListSerializer
+
+    def get_task(self):
+        return get_object_or_404(Task, pk=self.kwargs["task_pk"])
 
     def create(self, request, *args, **kwargs):
         """Create a task with the current user as owner and return the full task response."""
@@ -78,23 +82,27 @@ class CommentsListCreateViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     serializer_class = CommentsSerializer
 
+    def get_task(self):
+        return get_object_or_404(Task, pk=self.kwargs["task_pk"])
+
+
     def get_permissions(self):
         """Require comment authorship for DELETE; board membership for other methods."""
         if self.request.method == "DELETE":
             return [IsCommentAuthor()]
         return [IsCommentBoardMember()]
 
-    def list(self, request, task_pk=None):
-        """Return all comments for the given task."""
-        comments = Comment.objects.filter(task=task_pk)
-        serializer = self.serializer_class(comments, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        task = self.get_task()
+        return Comment.objects.filter(task=task)
     
     def create(self, request, *args, **kwargs):
         """Create a comment on the task, set the current user as author."""
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        comment = serializer.save(author=request.user, task_id=self.kwargs['task_pk'])
+
+        task = self.get_task()
+        comment = serializer.save(author=request.user, task=task)
         return Response(CommentsSerializer(comment).data, status=201)
     
     def destroy(self, request, *args, **kwargs):
