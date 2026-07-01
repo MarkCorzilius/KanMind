@@ -7,9 +7,10 @@ It includes user authentication, boards, tasks, comments, and task visualization
 ---
 
 ## ⚙️ Tech Stack
-- Django
-- Django REST Framework
-- SQLite
+- Python 3.14.0
+- Django 6.0.6
+- Django REST Framework 3.17.1
+- SQLite 3.51.0
 
 ---
 
