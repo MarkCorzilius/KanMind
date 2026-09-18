@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -36,7 +38,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('repeated_password')
 
         return User.objects.create_user(
-            username = validated_data['email'],
             email = validated_data['email'],
             password = validated_data['password'],
             first_name  = validated_data['first_name'],

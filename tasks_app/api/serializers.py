@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from tasks_app.models import Task, Comment
-from django.contrib.auth.models import User
 from core.serializers import MemberSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class TaskSerializer(serializers.ModelSerializer):
