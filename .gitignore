@@ -3,6 +3,10 @@ db.sqlite3
 __pycache__/
 *.pyc
 
-env/
+# Environment / secrets
 venv/
 .venv/
+
+.env
+.env.*
+!.env.template
