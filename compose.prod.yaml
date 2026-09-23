@@ -1,6 +1,6 @@
 services:
   web:
-    image: 254771353313.dkr.ecr.eu-central-1.amazonaws.com/kanmind-backend:latest
+    image: 254771353313.dkr.ecr.eu-central-1.amazonaws.com/kanmind-backend:${IMAGE_TAG}
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     ports:
       - "127.0.0.1:8001:8000"
